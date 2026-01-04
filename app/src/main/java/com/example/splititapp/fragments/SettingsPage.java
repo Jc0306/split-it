@@ -5,18 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.splititapp.R;
 
-public class AccountPage extends Fragment {
+public class SettingsPage extends Fragment {
 
     View view;
 
@@ -26,7 +21,7 @@ public class AccountPage extends Fragment {
         super.onCreate(savedInstanceState);
 
 
-        view = inflater.inflate(R.layout.fragment_accountpage, container, false);
+        view = inflater.inflate(R.layout.fragment_settingspage, container, false);
 
         return view;
     }

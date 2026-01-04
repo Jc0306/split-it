@@ -2,14 +2,10 @@ package com.example.splititapp;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.splititapp.fragments.AccountPage;
+import com.example.splititapp.fragments.SettingsPage;
 import com.example.splititapp.fragments.AddPage;
 import com.example.splititapp.fragments.HomePage;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -40,7 +36,7 @@ public class Home extends AppCompatActivity {
         } else if (itemId == R.id.nav_add){
             selectedFragment = new AddPage();
         } else if (itemId == R.id.nav_account) {
-            selectedFragment = new AccountPage();
+            selectedFragment = new SettingsPage();
         }
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
 
