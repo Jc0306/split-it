@@ -1,6 +1,7 @@
 package com.example.splititapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +13,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,13 +56,28 @@ public class Login extends AppCompatActivity {
 
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
-                    Toast.makeText(Login.this, response, Toast.LENGTH_SHORT).show();
-                    if (response.contains("Login Successful")) {
-                        Intent intent = new Intent(Login.this, com.example.splititapp.MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
+                    try {
+                        JSONObject obj = new JSONObject(response);
 
+                        if (obj.getString("message").contains("Login Successful")) {
+
+                            // 3. Get the ID and Save it in SharedPreferences
+                            String userId = obj.getString("id");
+                            SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = pref.edit();
+                            editor.putString("user_id", userId);
+                            editor.apply();
+
+                            Intent intent = new Intent(Login.this, com.example.splititapp.MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(Login.this, "Login Failed", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(Login.this, response, Toast.LENGTH_SHORT).show();
+                    }
                 },
                 error -> {
                     Toast.makeText(Login.this, "Error connecting to XAMPP", Toast.LENGTH_SHORT).show();
