@@ -14,9 +14,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $result = mysqli_query($conn, $sql);
 
     if (mysqli_num_rows($result) > 0) {
-        echo "Login Successful";
+        $row = mysqli_fetch_assoc($result);
+        
+        echo json_encode([
+            "status" => "success",
+            "message" => "Login Successful",
+            "id" => $row['id'] 
+        ]);
     } else {
-        echo "Invalid Email or Password";
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid Email or Password"
+        ]);
     }
 }
 mysqli_close($conn);
