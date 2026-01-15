@@ -56,7 +56,6 @@ public class Accounts extends AppCompatActivity {
 
         toggleFields(false);
 
-        // 4. Back Button Logic
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
