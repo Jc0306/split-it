@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.splititapp.Accounts;
 import com.example.splititapp.HistoryActivity;
+import com.example.splititapp.PrivacyAndSupport;
 import com.example.splititapp.R;
 
 public class SettingsPage extends Fragment {
@@ -25,9 +26,14 @@ public class SettingsPage extends Fragment {
         view = inflater.inflate(R.layout.fragment_settingspage, container, false);
 
         Button btnAccount = view.findViewById(R.id.button2);
-
         btnAccount.setOnClickListener(v -> {
             Intent intent = new Intent(requireActivity(), Accounts.class);
+            startActivity(intent);
+        });
+
+        Button btnPrivacy = view.findViewById(R.id.button7);
+        btnPrivacy.setOnClickListener(v -> {
+            Intent intent = new Intent(requireActivity(), PrivacyAndSupport.class);
             startActivity(intent);
         });
 

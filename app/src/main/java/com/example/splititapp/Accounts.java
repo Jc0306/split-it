@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
@@ -23,7 +24,7 @@ public class Accounts extends AppCompatActivity {
 
     private EditText etName, etEmail, etBirthdate, etPassword;
     private TextView tvHeaderName, tvHeaderEmail;
-    private ImageButton btnEditToggle;
+    private ImageButton btnEditToggle, btnBack;
     private Button btnSave;
     private boolean isEditMode = false;
     private String userId;
@@ -52,18 +53,33 @@ public class Accounts extends AppCompatActivity {
         tvHeaderEmail = findViewById(R.id.tvHeaderEmail);
         btnEditToggle = findViewById(R.id.btnEditToggle);
         btnSave = findViewById(R.id.btnSave);
+        btnBack = findViewById(R.id.btnBack);
         Button btnLogout = findViewById(R.id.logoutbtn);
 
-        // 3. Logout Logic (Correctly placed in onCreate)
-        btnLogout.setOnClickListener(v -> {
-            SharedPreferences.Editor editor = pref.edit();
-            editor.clear();
-            editor.apply();
+        // 3. Initial state: Fields disabled
+        toggleFields(false);
 
-            Intent intent = new Intent(Accounts.this, Login.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+        // 4. Back Button Logic
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
+
+        // 5. Logout Logic
+        btnLogout.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Logout")
+                    .setMessage("Are you sure you want to logout?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.clear();
+                        editor.apply();
+                        Intent intent = new Intent(Accounts.this, Login.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
         });
 
         fetchUserData();
@@ -73,16 +89,20 @@ public class Accounts extends AppCompatActivity {
             toggleFields(isEditMode);
         });
 
+        // 6. Save Logic with Confirmation Dialog
         btnSave.setOnClickListener(v -> {
-            updateUserData();
-            isEditMode = false;
-            toggleFields(false);
+            new AlertDialog.Builder(this)
+                    .setTitle("Save Changes")
+                    .setMessage("Are you sure you want to update your profile?")
+                    .setPositiveButton("Yes", (dialog, which) -> updateUserData())
+                    .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                    .show();
         });
     }
 
     private void toggleFields(boolean enable) {
         etName.setEnabled(enable);
-        etEmail.setEnabled(false); // Locked as requested
+        etEmail.setEnabled(false);
         etBirthdate.setEnabled(enable);
         etPassword.setEnabled(enable);
         btnSave.setVisibility(enable ? View.VISIBLE : View.GONE);
@@ -93,21 +113,23 @@ public class Accounts extends AppCompatActivity {
         String url = "http://10.0.2.2/split_it/get_profile.php";
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 response -> {
+                    Log.d("API_RESPONSE", response);
                     try {
                         JSONObject obj = new JSONObject(response);
-                        if (!obj.has("error")) {
-                            etName.setText(obj.getString("fullname"));
-                            etEmail.setText(obj.getString("email"));
-                            etBirthdate.setText(obj.getString("birthdate"));
-                            tvHeaderName.setText(obj.getString("fullname"));
-                            tvHeaderEmail.setText(obj.getString("email"));
-                            etPassword.setText(obj.getString("password"));
+                        if (obj.has("fullname") || obj.has("name")) {
+                            String name = obj.optString("fullname", obj.optString("name", "N/A"));
+                            String email = obj.optString("email", "N/A");
 
-                            tvHeaderName.setText(obj.getString("fullname"));
-                            tvHeaderEmail.setText(obj.getString("email"));
+                            etName.setText(name);
+                            etEmail.setText(email);
+                            etBirthdate.setText(obj.optString("birthdate", ""));
+                            etPassword.setText(obj.optString("password", ""));
+
+                            tvHeaderName.setText(name);
+                            tvHeaderEmail.setText(email);
                         }
                     } catch (JSONException e) {
-                        Log.e("JSON_ERROR", response);
+                        Log.e("JSON_ERROR", "Response was: " + response);
                     }
                 }, error -> Log.e("API_ERROR", error.toString())) {
             @Override
@@ -126,9 +148,13 @@ public class Accounts extends AppCompatActivity {
                 response -> {
                     try {
                         JSONObject obj = new JSONObject(response);
-                        Toast.makeText(this, obj.getString("message"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, obj.optString("message", "Updated!"), Toast.LENGTH_SHORT).show();
+
                         tvHeaderName.setText(etName.getText().toString());
                         tvHeaderEmail.setText(etEmail.getText().toString());
+
+                        isEditMode = false;
+                        toggleFields(false);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -141,10 +167,7 @@ public class Accounts extends AppCompatActivity {
                 params.put("fullname", etName.getText().toString());
                 params.put("email", etEmail.getText().toString());
                 params.put("birthdate", etBirthdate.getText().toString());
-
-                // ADD THIS LINE:
                 params.put("password", etPassword.getText().toString());
-
                 return params;
             }
         };
